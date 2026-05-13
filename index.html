@@ -1,0 +1,364 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>みんなの声</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet"><style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#FFFFFF;font-family:'Noto Sans JP',sans-serif;padding:36px 20px;position:relative;overflow-x:hidden}
+.bg-blob{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+.b1{width:360px;height:360px;background:#BDE5F7;opacity:0.35;top:-100px;left:-100px}
+.b2{width:260px;height:260px;background:#FDDCB0;opacity:0.35;top:30px;right:-80px}
+.b3{width:220px;height:220px;background:#D6EDC0;opacity:0.35;bottom:40px;left:0}
+.b4{width:260px;height:260px;background:#FAD0E2;opacity:0.30;bottom:-80px;right:10px}
+.container{max-width:620px;margin:0 auto;position:relative;z-index:1}
+.heading-wrap{margin-bottom:24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.heading{font-size:24px;font-weight:700;color:#2A2A2A;border-bottom:3px solid #6AADD5;padding-bottom:4px}
+.count-badge{background:#FEF08A;color:#5A4A00;font-size:13px;font-weight:700;padding:3px 14px;border-radius:100px;border:1.5px solid #D4BC00}
+.cards-wrapper{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.tl-row{display:flex;gap:14px;align-items:stretch;opacity:0;transform:translateY(12px);transition:opacity 0.55s ease,transform 0.55s ease}
+.tl-row.show{opacity:1;transform:translateY(0)}
+.tl-left{display:flex;flex-direction:column;align-items:center;width:16px;flex-shrink:0}
+.tl-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;margin-top:20px;border:2px solid #FFF}
+.tl-line{width:2px;flex:1;margin-top:4px;border-radius:2px}
+.card{flex:1;background:#FFF;border-radius:12px;padding:16px 20px;position:relative;overflow:hidden;border:1.5px solid #E8E8E8;box-shadow:3px 4px 0 #E0E0E0}
+.card-bar{height:5px;position:absolute;top:0;left:0;right:0;border-radius:10px 10px 0 0}
+.comment-name{font-size:13px;font-weight:700;color:#6AADD5;margin-bottom:6px}
+.comment-text{font-size:17px;line-height:1.85;color:#2A2A2A;margin-bottom:12px}
+.reactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.reaction-btn{display:inline-flex;align-items:center;gap:5px;background:#F5F5F5;border:1.5px solid #E0E0E0;border-radius:100px;padding:6px 14px;cursor:pointer;font-size:14px;font-family:'Noto Sans JP',sans-serif;transition:all 0.15s;user-select:none;white-space:nowrap;flex-shrink:0}
+.reaction-btn:hover{background:#EEF6FF;border-color:#6AADD5}
+.reaction-btn.reacted{background:#EEF6FF;border-color:#6AADD5}
+.reaction-count{font-size:13px;color:#555;font-weight:700}
+.controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:8px}
+.btn{background:#FFF;border:1.5px solid #AAAAAA;color:#444;padding:9px 22px;border-radius:100px;cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;box-shadow:2px 2px 0 #DADADA;transition:all 0.12s}
+.btn:hover{border-color:#6AADD5;color:#005DAB;box-shadow:2px 2px 0 #B8D8EE}
+.btn:active{transform:translate(1px,1px);box-shadow:none}
+.btn-next{background:#6AADD5;color:#FFF;border-color:#6AADD5;box-shadow:2px 2px 0 #4A8CB5}
+.btn-next:hover{background:#4A8CB5;color:#FFF;border-color:#4A8CB5}
+.counter{font-size:13px;color:#AAA;text-align:center}
+</style></head><body>
+<div class="bg-blob b1"></div><div class="bg-blob b2"></div><div class="bg-blob b3"></div><div class="bg-blob b4"></div>
+<div class="container">
+  <div class="heading-wrap">
+    <div class="heading">みんなの声</div>
+    <div class="count-badge" id="countBadge">読み込み中...</div>
+  </div>
+  <div style="font-size:13px;color:#888;margin-bottom:16px" id="reactionTotal"></div>
+  <div style="background:#FFF0F5;border-radius:10px;padding:12px 16px;border-left:4px solid #EB6EA5;margin-bottom:20px"><p style="font-size:13px;font-weight:700;color:#8A1A4A;margin-bottom:6px">素敵な質問にリアクションしよう！</p><div style="display:flex;gap:16px;flex-wrap:wrap"><span style="font-size:13px;color:#8A1A4A">❤️ いいね</span><span style="font-size:13px;color:#8A1A4A">👀 気になる</span><span style="font-size:13px;color:#8A1A4A">💡 なるほど！</span></div></div>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+    <input id="searchInput" type="text" placeholder="キーワードで検索..." oninput="doSearch()" style="flex:1;border:1.5px solid #CCC;border-radius:8px;padding:8px 14px;font-size:14px;font-family:'Noto Sans JP',sans-serif;outline:none">
+    <button onclick="clearSearch()" style="background:none;border:none;color:#AAA;font-size:20px;cursor:pointer;padding:0 4px;line-height:1">✕</button>
+  </div>
+  <div id="searchInfo" style="font-size:12px;color:#888;margin-bottom:8px;min-height:18px"></div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <span style="font-size:13px;font-weight:700;color:#444">並び替え：</span>
+    <select id="sortSelect" onchange="setSort(this.value)" style="border:1.5px solid #CCC;border-radius:8px;padding:6px 12px;font-size:13px;color:#333;background:#FFF;cursor:pointer;font-family:'Noto Sans JP',sans-serif">
+      <option value="random">ランダム</option>
+      <option value="newest">新しい順</option>
+      <option value="oldest">古い順</option>
+      <option value="heart">❤️ 多い順</option>
+      <option value="eyes">👀 多い順</option>
+      <option value="bulb">💡 多い順</option>
+      <option value="total">合計リアクション多い順</option>
+    </select>
+  </div>
+  <div class="cards-wrapper" id="cardsWrapper"></div>
+  <div class="controls">
+    <button class="btn" onclick="prevSet()">◀ 前の3件</button>
+    <button class="btn btn-next" onclick="nextSet()">次の3件 ▶</button>
+  </div>
+  <div class="counter" id="counter"></div>
+</div>
+<script>
+// ========== Supabase設定（後で入力） ==========
+const SUPABASE_URL = 'https://rhcfmhchtgmpbjsoayiw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJoY2ZtaGNodGdtcGJqc29heWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NDkwMjEsImV4cCI6MjA5NDAyNTAyMX0.oCEfclGODpa5t-afIe0zwOMr1RSZc7FVAR-WiagF1vk';
+// =============================================
+
+const CSV_URL='./comments.csv';
+const EMOJIS=[{emoji:'❤️',label:'いいね'},{emoji:'👀',label:'気になる'},{emoji:'💡',label:'なるほど！'}];
+const COLORS=[
+  {bar:'#6AADD5',dot:'#6AADD5',line:'#C8DFF0'},
+  {bar:'#F4A85A',dot:'#F4A85A',line:'#FCDEC0'},
+  {bar:'#8DC87A',dot:'#8DC87A',line:'#C8ECC0'}
+];
+const SHOW=3,INTERVAL=8000;
+let sets=[],setIdx=0,timer=null;
+let reactionCache={};
+let allComments=[];
+let currentSort='random';
+
+async function fetchAllReactions(){
+  try{
+    const res=await fetch(SUPABASE_URL+'/rest/v1/reactions?select=question_no,emoji',{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
+    });
+    const data=await res.json();
+    if(!Array.isArray(data))return;
+    // reactionCacheを全件で更新
+    data.forEach(row=>{
+      if(!reactionCache[row.question_no])reactionCache[row.question_no]={};
+      reactionCache[row.question_no][row.emoji]=(reactionCache[row.question_no][row.emoji]||0)+1;
+    });
+  }catch(e){console.log('fetchAll error',e);}
+}
+
+function formatDate(str){
+  if(!str)return '';
+  // "2026/5/8 14:35" → "5/8 14:35"
+  const m=str.match(/\d+\/(\d+)\/(\d+)\s+(\d+):(\d+)/);
+  if(m)return m[1]+'/'+m[2]+' '+m[3]+':'+m[4];
+  return str;
+}
+
+function sortComments(comments,sort){
+  if(sort==='random') return shuffle([...comments]);
+  if(sort==='newest') return [...comments].sort((a,b)=>b.no-a.no);
+  if(sort==='oldest') return [...comments].sort((a,b)=>a.no-b.no);
+  return [...comments].sort((a,b)=>{
+    const ra=reactionCache[a.no]||{};
+    const rb=reactionCache[b.no]||{};
+    if(sort==='heart') return (rb['❤️']||0)-(ra['❤️']||0);
+    if(sort==='eyes')  return (rb['👀']||0)-(ra['👀']||0);
+    if(sort==='bulb')  return (rb['💡']||0)-(ra['💡']||0);
+    if(sort==='total'){
+      const ta=Object.values(ra).reduce((s,v)=>s+v,0);
+      const tb=Object.values(rb).reduce((s,v)=>s+v,0);
+      return tb-ta;
+    }
+    return 0;
+  });
+}
+
+let currentKeyword='';
+
+function getFilteredComments(){
+  if(!currentKeyword)return allComments;
+  const kw=currentKeyword.toLowerCase();
+  return allComments.filter(c=>
+    c.text.toLowerCase().includes(kw)||
+    c.name.toLowerCase().includes(kw)
+  );
+}
+
+function doSearch(){
+  currentKeyword=document.getElementById('searchInput').value.trim();
+  buildSets(currentSort);
+}
+
+function clearSearch(){
+  document.getElementById('searchInput').value='';
+  currentKeyword='';
+  buildSets(currentSort);
+}
+
+function buildSets(sort){
+  const filtered=getFilteredComments();
+  const sorted=sortComments(filtered,sort);
+  sets=[];
+  for(let i=0;i<sorted.length;i+=SHOW)sets.push(sorted.slice(i,i+SHOW));
+  if(sets.length===0)sets=[[]];
+  setIdx=0;
+  // 検索情報を更新
+  const info=document.getElementById('searchInfo');
+  if(currentKeyword){
+    info.textContent='"'+currentKeyword+'" の検索結果：'+filtered.length+'件';
+  } else {
+    info.textContent='';
+  }
+  showSet(true);
+  clearInterval(timer);
+  if(!currentKeyword)timer=setInterval(nextSet,INTERVAL);
+}
+
+function setSort(sort){
+  currentSort=sort;
+  buildSets(sort);
+}
+
+// ── ユーザーID（ブラウザ固有） ──
+function getUserId(){
+  try{
+    let id=localStorage.getItem('user_id');
+    if(!id){id=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem('user_id',id);}
+    return id;
+  }catch(e){return 'anon';}
+}
+const USER_ID=getUserId();
+
+// ── localStorage でリアクション済み管理 ──
+function lsKey(no,emoji){return 'rx_'+no+'_'+emoji;}
+function isReacted(no,emoji){try{return localStorage.getItem(lsKey(no,emoji))==='1';}catch(e){return false;}}
+function setReacted(no,emoji,val){try{val?localStorage.setItem(lsKey(no,emoji),'1'):localStorage.removeItem(lsKey(no,emoji));}catch(e){}}
+
+// ── Supabase ──
+async function fetchReactions(nos){
+  try{
+    const ids=nos.join(',');
+    const res=await fetch(SUPABASE_URL+'/rest/v1/reaction_counts?question_no=in.('+ids+')&select=question_no,emoji,count',{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
+    });
+    const data=await res.json();
+    data.forEach(row=>{
+      if(!reactionCache[row.question_no])reactionCache[row.question_no]={};
+      reactionCache[row.question_no][row.emoji]=parseInt(row.count)||0;
+    });
+  }catch(e){console.log('fetch error',e);}
+}
+
+async function addReaction(no,emoji){
+  try{
+    await fetch(SUPABASE_URL+'/rest/v1/reactions',{
+      method:'POST',
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'resolution=ignore-duplicates'},
+      body:JSON.stringify({question_no:no,emoji:emoji,user_id:USER_ID})
+    });
+  }catch(e){console.log('add error',e);}
+}
+
+async function removeReaction(no,emoji){
+  try{
+    await fetch(SUPABASE_URL+'/rest/v1/reactions?question_no=eq.'+no+'&emoji=eq.'+encodeURIComponent(emoji)+'&user_id=eq.'+USER_ID,{
+      method:'DELETE',
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
+    });
+  }catch(e){console.log('remove error',e);}
+}
+
+async function handleReaction(btn){
+  if(btn.dataset.processing==='1')return;
+  btn.dataset.processing='1';
+  const no=btn.dataset.no;
+  const emoji=btn.dataset.emoji;
+  const countEl=btn.querySelector('.reaction-count');
+  const current=parseInt(countEl.textContent)||0;
+  if(btn.classList.contains('reacted')){
+    btn.classList.remove('reacted');
+    countEl.textContent=' '+Math.max(0,current-1);
+    setReacted(no,emoji,false);
+    if(!reactionCache[no])reactionCache[no]={};
+    reactionCache[no][emoji]=Math.max(0,(reactionCache[no][emoji]||0)-1);
+    await removeReaction(no,emoji);
+  } else {
+    btn.classList.add('reacted');
+    countEl.textContent=' '+(current+1);
+    setReacted(no,emoji,true);
+    if(!reactionCache[no])reactionCache[no]={};
+    reactionCache[no][emoji]=(reactionCache[no][emoji]||0)+1;
+    await addReaction(no,emoji);
+  }
+  btn.dataset.processing='0';
+}
+async function fetchTotalReactions(){
+  try{
+    const res=await fetch(SUPABASE_URL+'/rest/v1/reactions?select=emoji',{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
+    });
+    const data=await res.json();
+    const el=document.getElementById('reactionTotal');
+    if(!Array.isArray(data)||data.length===0){el.textContent='';return;}
+    const total=data.length;
+    const byEmoji={};
+    data.forEach(r=>{byEmoji[r.emoji]=(byEmoji[r.emoji]||0)+1;});
+    const detail=['❤️','👀','💡'].map(e=>byEmoji[e]?e+' <b>'+byEmoji[e]+'</b>':'').filter(Boolean).join('　');
+    el.innerHTML='<div style="border:1.5px solid #E0E0E0;border-radius:10px;padding:8px 16px;display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:13px;font-weight:700;color:#444">リアクション合計 '+total+'件</span><span style="color:#DDD">|</span><span style="font-size:13px;color:#333">'+detail+'</span></div>';
+  }catch(e){}
+}
+async function loadCSV(){
+  try{
+    const res=await fetch(CSV_URL+'?t='+Date.now());
+    const text=await res.text();
+    const rows=parseCSV(text);
+    if(rows.length>=2){
+      // メアド削除後: [0]No [1]状態 [2]受付日時 [3]対応メモ [4]ニックネーム [5]質問内容
+      const comments=rows.slice(1)
+        .map(r=>({no:(r[0]||'').trim(),name:(r[4]||'').trim(),text:(r[5]||'').trim(),date:(r[2]||'').trim()}))
+        .filter(c=>c.text!=='');
+      if(comments.length>0){init(comments);return;}
+    }
+  }catch(e){}
+  init([{no:'0',name:'',text:'CSVを読み込めませんでした。GitHubにcomments.csvを置いてください。'}]);
+}
+
+function parseCSV(text){
+  text=text.replace(/^\uFEFF/,'');
+  return text.trim().split(/\r?\n/).map(line=>{
+    const result=[];let cur='',inQ=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+      else if(c===','&&!inQ){result.push(cur.trim());cur='';}
+      else cur+=c;
+    }
+    result.push(cur.trim());return result;
+  });
+}
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+async function init(comments){
+  allComments=comments;
+  document.getElementById('countBadge').textContent=comments.length+'件の質問が届いています';
+  await Promise.all([fetchAllReactions(),fetchTotalReactions()]);
+  buildSets(currentSort);
+}
+
+async function showSet(anim){
+  const wrapper=document.getElementById('cardsWrapper');
+  const set=sets[setIdx];
+
+  // フェードアウト
+  Array.from(wrapper.children).forEach(r=>{r.style.transition='opacity 0.3s,transform 0.3s';r.style.opacity='0';r.style.transform='translateY(-10px)';});
+
+  // リアクション取得（フェードアウトと並行して待つ）
+  const nos=set.map(c=>c.no).filter(n=>n);
+  const fetchPromise=nos.length?fetchReactions(nos):Promise.resolve();
+  const waitPromise=new Promise(res=>setTimeout(res,anim&&wrapper.children.length>0?320:0));
+  await Promise.all([fetchPromise,waitPromise]);
+
+  wrapper.innerHTML='';
+  if(!sets[setIdx]||sets[setIdx].length===0){
+    wrapper.innerHTML='<div style="text-align:center;color:#AAA;font-size:14px;padding:40px 0;">該当する質問が見つかりませんでした</div>';
+    document.getElementById('counter').textContent='';
+    return;
+  }
+  set.forEach((item,i)=>{
+    const col=COLORS[i]||COLORS[2];
+    const isLast=(i===set.length-1);
+    const row=document.createElement('div');
+    row.className='tl-row';
+    const lineHTML=isLast?'':'<div class="tl-line" style="background:'+col.line+'"></div>';
+    const nameHTML=(item.name||item.date)?'<div class="comment-name">'+(item.name?esc(item.name):'')+(item.name&&item.date?' ・ ':''  )+(item.date?'<span style="font-weight:400;color:#AAA;font-size:12px">'+esc(formatDate(item.date))+'</span>':'')+'</div>':'';
+    const rxData=reactionCache[item.no]||{};
+    const rxHTML=EMOJIS.map(e=>{
+      const cnt=rxData[e.emoji]||0;
+      const reacted=isReacted(item.no,e.emoji);
+      return '<button class="reaction-btn'+(reacted?' reacted':'')+'" data-no="'+item.no+'" data-emoji="'+e.emoji+'" onclick="handleReaction(this)">'+e.emoji+'<span class="reaction-count"> '+cnt+'</span></button>';
+    }).join('');
+    row.innerHTML=
+      '<div class="tl-left"><div class="tl-dot" style="background:'+col.dot+'"></div>'+lineHTML+'</div>'+
+      '<div class="card">'+
+        '<div class="card-bar" style="background:'+col.bar+'"></div>'+
+        nameHTML+
+        '<div class="comment-text">'+highlight(item.text,currentKeyword)+'</div>'+
+        '<div class="reactions">'+rxHTML+'</div>'+
+      '</div>';
+    wrapper.appendChild(row);
+    setTimeout(()=>row.classList.add('show'),anim?i*120:0);
+  });
+  document.getElementById('counter').textContent=(setIdx+1)+' / '+sets.length+' セット';
+}
+
+function nextSet(){setIdx=(setIdx+1)%sets.length;showSet(true);clearInterval(timer);timer=setInterval(nextSet,INTERVAL);}
+function prevSet(){setIdx=(setIdx-1+sets.length)%sets.length;showSet(true);clearInterval(timer);timer=setInterval(nextSet,INTERVAL);}
+function highlight(text,kw){
+  if(!kw)return esc(text);
+  const escaped=kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return esc(text).replace(new RegExp('('+escaped+')','gi'),'<mark style="background:#FEF08A;border-radius:3px;padding:0 2px">$1</mark>');
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+loadCSV();
+</script>
+</body></html>
